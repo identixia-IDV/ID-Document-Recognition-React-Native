@@ -1,0 +1,5 @@
+framework module documentrecognitionsdk {
+  umbrella header "DocumentRecognitionSDK.h"
+  export *
+  module * { export * }
+}

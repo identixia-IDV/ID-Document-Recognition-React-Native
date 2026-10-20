@@ -1,0 +1,62 @@
+buildscript {
+    ext {
+        buildToolsVersion = "34.0.0"
+        minSdkVersion = 24
+        compileSdkVersion = 34
+        targetSdkVersion = 34
+        ndkVersion = "26.1.10909125"
+        kotlinVersion = "1.9.22"
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle")
+        classpath("com.facebook.react:react-native-gradle-plugin")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+    }
+}
+
+apply plugin: "com.facebook.react.rootproject"
+
+// Windows: deep clone / monorepo paths push react-native-screens (and similar)
+// CMake object paths past CMAKE_OBJECT_PATH_MAX (~250), which makes ninja loop
+// on "build.ninja still dirty". Stage native builds under a short path.
+def shortCxxRoot = System.getenv("IDENTIXIA_CXX_DIR") ?: "C:/ix-cxx"
+def applyShortCxx = { Project sub ->
+    def androidExt = sub.extensions.findByName("android")
+    if (androidExt == null) {
+        return
+    }
+    try {
+        def cmake = androidExt.externalNativeBuild.cmake
+        if (cmake != null && cmake.path != null) {
+            cmake.buildStagingDirectory = file("${shortCxxRoot}/${sub.name}")
+        }
+    } catch (Throwable ignored) {
+        // Library has no cmake / AGP variant without externalNativeBuild.
+    }
+}
+subprojects { sub ->
+    if (sub.state.executed) {
+        applyShortCxx(sub)
+    } else {
+        sub.afterEvaluate { applyShortCxx(sub) }
+    }
+}
+
+
+
+// Prefer project-local Maven mirror only when it contains real artifacts.
+allprojects {
+    repositories {
+        def localM2 = file("${rootDir}/local-m2")
+        if (localM2.directory && fileTree(localM2) { include "**/*.aar"; include "**/*.jar" }.files) {
+            maven { url = uri(localM2) }
+        }
+        google()
+        mavenCentral()
+    }
+}
+

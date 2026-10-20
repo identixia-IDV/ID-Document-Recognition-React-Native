@@ -1,0 +1,11 @@
+// Consumes Identixia Document Reader AAR (same as ID-Document-Recognition-Liveness-Detection-Android).
+// Drop documentrecognitionsdk.aar here from the Android Drive folder / App export.
+def aar = file("documentrecognitionsdk.aar")
+if (!aar.exists()) {
+    throw new GradleException(
+        "Missing example/android/libdocumentrecognitionsdk/documentrecognitionsdk.aar.\n" +
+        "Copy it from ID-Document-Recognition-Liveness-Detection-Android/libdocumentrecognitionsdk/ or the Drive Android pack."
+    )
+}
+configurations.maybeCreate("default")
+artifacts.add("default", aar)

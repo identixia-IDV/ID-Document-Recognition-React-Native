@@ -1,0 +1,32 @@
+pluginManagement {
+    def localM2 = file("${rootDir}/local-m2")
+    def useLocalM2 = localM2.directory && fileTree(localM2) { include '**/*.aar'; include '**/*.jar' }.files
+    repositories {
+        if (useLocalM2) {
+            maven { url = uri(localM2) }
+        }
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    def localM2 = file("${rootDir}/local-m2")
+    def useLocalM2 = localM2.directory && fileTree(localM2) { include '**/*.aar'; include '**/*.jar' }.files
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        if (useLocalM2) {
+            maven { url = uri(localM2) }
+        }
+        google()
+        mavenCentral()
+        maven { url = uri("https://www.jitpack.io") }
+    }
+}
+
+rootProject.name = 'documentrecognitionsdk.example'
+apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
+include ':app'
+include ':libdocumentrecognitionsdk'
+includeBuild('../node_modules/@react-native/gradle-plugin')
